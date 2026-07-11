@@ -24,3 +24,8 @@
 - CO and O3 use 8-hour rolling averages.
 - AQI is calculated as the maximum available pollutant sub-index.
 - AQI is marked valid only when at least 3 pollutant sub-indices are available and at least one particulate sub-index exists.
+
+## City-wide outage handling:
+- A timestamp-level missingness audit detected 70 outage hours where at least four AQI pollutants were missing for 90% or more of stations. 
+- These outage hours were removed instead of imputed, dropping 2,660 station-hour rows.
+-  After removal, remaining pollutant missingness was below 0.6% for every pollutant, so residual NaNs were preserved in master_clean.csv rather than forcing nearest-station proxy imputation.
