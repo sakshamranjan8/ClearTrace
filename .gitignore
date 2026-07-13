@@ -6,6 +6,7 @@ __pycache__/
 data/raw/*.csv
 data/processed/*.csv
 data/features/*.csv
+!data/features/features_core_v1.csv
 
 .DS_Store
 .vscode/
