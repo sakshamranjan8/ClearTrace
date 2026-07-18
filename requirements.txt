@@ -1,3 +1,14 @@
+# Core data pipeline
+numpy
 pandas
 requests
 python-dotenv
+
+# EDA and visualisation
+matplotlib
+missingno
+windrose
+
+# Notebook environment
+jupyterlab
+ipykernel
