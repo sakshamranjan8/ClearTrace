@@ -12,3 +12,10 @@ windrose
 # Notebook environment
 jupyterlab
 ipykernel
+
+# Development & Training (Not used in production inference)
+scikit-learn
+
+# Loading saved models and serving predictions
+joblib
+catboost
