@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "name": "openaq-api",
+    "website": "/",
+    "page": 1,
+    "limit": 1,
+    "found": ">1"
+  },
+  "results": [
+    {
+      "value": 270.0,
+      "flagInfo": {
+        "hasFlags": false
+      },
+      "parameter": {
+        "id": 2,
+        "name": "pm25",
+        "units": "\u00b5g/m\u00b3",
+        "displayName": null
+      },
+      "period": {
+        "label": "raw",
+        "interval": "01:00:00",
+        "datetimeFrom": {
+          "utc": "2016-11-09T17:30:00Z",
+          "local": "2016-11-09T23:00:00+05:30"
+        },
+        "datetimeTo": {
+          "utc": "2016-11-09T18:30:00Z",
+          "local": "2016-11-10T00:00:00+05:30"
+        }
+      },
+      "coordinates": null,
+      "summary": null,
+      "coverage": {
+        "expectedCount": 1,
+        "expectedInterval": "01:00:00",
+        "observedCount": 1,
+        "observedInterval": "01:00:00",
+        "percentComplete": 100.0,
+        "percentCoverage": 100.0,
+        "datetimeFrom": {
+          "utc": "2016-11-09T17:30:00Z",
+          "local": "2016-11-09T23:00:00+05:30"
+        },
+        "datetimeTo": {
+          "utc": "2016-11-09T18:30:00Z",
+          "local": "2016-11-10T00:00:00+05:30"
+        }
+      }
+    }
+  ]
+}

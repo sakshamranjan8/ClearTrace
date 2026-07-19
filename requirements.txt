@@ -1,0 +1,28 @@
+# Core data pipeline
+numpy
+pandas
+requests
+python-dotenv
+
+# EDA and visualisation
+matplotlib
+missingno
+windrose
+
+# Notebook environment
+jupyterlab
+ipykernel
+
+# Development & Training (Not used in production inference)
+scikit-learn
+
+# Loading saved models and serving predictions
+joblib
+catboost
+
+streamlit>=1.36
+pandas>=2.0
+plotly>=5.20
+folium>=0.16
+streamlit-folium>=0.21
+anthropic>=0.30
