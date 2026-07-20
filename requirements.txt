@@ -18,6 +18,7 @@ scikit-learn
 
 # Loading saved models and serving predictions
 joblib
+<<<<<<< HEAD
 catboost
 
 streamlit>=1.36
@@ -26,3 +27,6 @@ plotly>=5.20
 folium>=0.16
 streamlit-folium>=0.21
 anthropic>=0.30
+=======
+catboost
+>>>>>>> ffb37c0fa518e9ec973836b3647764c239c73ad5
