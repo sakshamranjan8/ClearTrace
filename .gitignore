@@ -10,10 +10,11 @@ data/features/*.csv
 !data/features/features_core_v2.csv
 .DS_Store
 .vscode/
-
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
 .venv
+*.db
+reports_images/
