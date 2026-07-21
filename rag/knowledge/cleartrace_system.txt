@@ -1,0 +1,73 @@
+CLEARTRACE SYSTEM ARCHITECTURE AND CAPABILITIES
+==================================================
+
+OVERVIEW
+--------
+ClearTrace is an AI-powered air quality monitoring and advisory system for Delhi. It provides real-time AQI data, pollution source attribution, predictive forecasts, and personalized health recommendations for residents of Delhi NCR. The system integrates multiple data sources, machine learning models, and a conversational chatbot interface to deliver actionable air quality intelligence.
+
+MONITORING NETWORK
+-------------------
+ClearTrace monitors 38 air quality stations across Delhi, operated by CPCB (Central Pollution Control Board) and DPCC (Delhi Pollution Control Committee). Real-time pollutant data is sourced from the OpenAQ platform, which aggregates government monitoring data into a standardized API.
+
+The system tracks 6 criteria pollutants at each station:
+- PM2.5 (fine particulate matter, diameter less than 2.5 microns)
+- PM10 (coarse particulate matter, diameter less than 10 microns)
+- NO2 (nitrogen dioxide)
+- CO (carbon monoxide)
+- SO2 (sulfur dioxide)
+- O3 (ozone)
+
+Data is ingested hourly. Each pollutant measurement includes the station ID, timestamp, concentration value, and unit. Missing data points are handled through interpolation for gaps under 3 hours and flagged as unavailable for longer gaps.
+
+WEATHER DATA INTEGRATION
+--------------------------
+ClearTrace integrates meteorological data from the Open-Meteo API to correlate weather conditions with air quality patterns. Weather parameters include:
+
+Temperature: Affects atmospheric stability. Low temperatures during winter nights create temperature inversions that trap pollutants near the surface.
+Humidity: High humidity can increase PM2.5 concentrations through hygroscopic growth of particles. However, rainfall washes out particulate matter.
+Wind speed and direction: Higher wind speeds improve dispersion. Wind direction determines whether stubble burning smoke from Punjab and Haryana reaches Delhi.
+Precipitation: Active rainfall episodes reduce AQI significantly. Even light drizzle can reduce PM2.5 by 20-40% within hours.
+
+Weather data is fetched at the city level and applied uniformly across stations, as meteorological conditions are relatively consistent across Delhi's geographic extent of approximately 1,484 square kilometers.
+
+AQI PREDICTION MODEL
+----------------------
+ClearTrace uses CatBoost gradient boosting models to predict AQI for the next 1 to 24 hours at each monitoring station. CatBoost was selected for its strong performance on tabular data with mixed feature types and its native handling of categorical variables.
+
+Model features include: historical pollutant concentrations (lag features for 1, 3, 6, 12, and 24 hours), current weather conditions, time-of-day and day-of-week patterns, seasonal indicators, and station-specific characteristics. The models are trained on historical data and output predicted AQI values with confidence intervals.
+
+Prediction accuracy generally decreases with forecast horizon. The 1-hour forecast achieves the highest accuracy, while the 24-hour forecast provides directional guidance (whether AQI will improve, worsen, or remain stable) with wider uncertainty bounds.
+
+SOURCE ATTRIBUTION SYSTEM
+---------------------------
+ClearTrace performs pollution source attribution using an emission source inventory derived from OpenStreetMap (OSM) geospatial data. The system identifies and categorizes nearby pollution sources around each monitoring station.
+
+Six source categories are tracked:
+
+Traffic: Mapped from OSM road network data including primary roads, secondary roads, highways, trunk roads, and major intersections. Source density is calculated within a 2-kilometer radius of each station. Higher road density and proximity to highways correlate with elevated NO2 and CO.
+
+Industrial: Identified from OSM industrial landuse zones, factories, manufacturing facilities, and warehouses. Distance weighting gives higher attribution to closer industrial sources.
+
+Construction: Mapped from OSM construction-tagged areas, building sites, and known infrastructure project zones. Contributes primarily to PM10 through dust generation.
+
+Power: Coal and gas power plants within a 50-kilometer radius. Contributes SO2, NOx, and particulate matter. Includes plants in neighboring Haryana and Uttar Pradesh whose emissions impact Delhi.
+
+Waste: Mapped from OSM landfill sites, waste transfer stations, and known dump sites (Bhalswa, Ghazipur, Okhla). Open waste burning contributes PM2.5 and toxic organic compounds.
+
+Wastewater: Treatment plants and sewage infrastructure mapped from OSM. Contributes to localized air quality issues through methane and ammonia emissions.
+
+Attribution methodology considers multiple factors: Euclidean distance from the monitoring station to each source (inverse-distance weighting), total source count within the radius, a confidence tier based on data completeness and source verification, and the operational or activity status of each source. Sources closer to the station receive higher attribution weight. The system produces a percentage breakdown showing the estimated contribution of each category to the station's overall pollution.
+
+HEALTH RISK SCORING
+---------------------
+ClearTrace computes personalized health risk scores by combining three factors: current or predicted AQI level, estimated exposure duration (based on user-reported daily routine or commute patterns), and user vulnerability profile.
+
+Six user vulnerability profiles are supported: adult (baseline risk), child (1.5x multiplier due to higher breathing rate and developing lungs), elderly (1.4x multiplier due to reduced lung function and cardiovascular comorbidity), asthma (1.6x multiplier due to airway hyperresponsiveness), outdoor_worker (1.3x multiplier adjusted for extended exposure duration), and pregnant_woman (1.4x multiplier due to fetal development sensitivity).
+
+The health risk score is mapped to actionable recommendation tiers: Low Risk, Moderate Risk, High Risk, and Very High Risk. Each tier triggers specific guidance messages tailored to the user's profile.
+
+CHATBOT INTERFACE
+------------------
+The ClearTrace chatbot uses Retrieval Augmented Generation (RAG) to answer user queries about Delhi air quality. A knowledge base of curated documents is embedded into a FAISS vector store. When a user asks a question, relevant document chunks are retrieved and provided as context to the language model, ensuring responses are grounded in verified, Delhi-specific air quality information rather than generic knowledge.
+
+The chatbot can answer questions about current AQI at specific stations, AQI forecasts, health recommendations for specific user profiles, pollution source breakdowns, protective measures, and historical pollution patterns in Delhi.

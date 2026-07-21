@@ -19,3 +19,12 @@ scikit-learn
 # Loading saved models and serving predictions
 joblib
 catboost
+
+# Module 3: Attribution Engine + RAG AI Chatbot
+fastapi
+uvicorn[standard]
+groq
+faiss-cpu
+sentence-transformers
+httpx
+pydantic

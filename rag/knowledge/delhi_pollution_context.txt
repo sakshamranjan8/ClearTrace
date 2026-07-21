@@ -1,0 +1,48 @@
+DELHI AIR POLLUTION CONTEXT AND PATTERNS
+==========================================
+
+OVERVIEW
+--------
+Delhi, the capital territory of India with a population of over 20 million, consistently ranks among the most polluted cities in the world. The city's geography — landlocked in the Indo-Gangetic Plain with the Aravalli range blocking western wind flow — creates conditions that trap pollutants, especially during winter months.
+
+MAJOR POLLUTION SOURCES
+------------------------
+Vehicular traffic contributes approximately 40% of Delhi's total emissions. The city has over 12 million registered vehicles, with diesel trucks and two-stroke autorickshaws being major contributors. Traffic emissions peak during morning (8-10 AM) and evening (5-8 PM) rush hours, releasing PM2.5, NO2, CO, and volatile organic compounds.
+
+Industrial emissions account for roughly 20% of pollution. Despite regulations, numerous small-scale industries in areas like Wazirpur, Mundka, Narela, and Bawana release particulate matter, SO2, and heavy metals. Brick kilns on Delhi's periphery are significant seasonal contributors.
+
+Construction dust contributes about 12% of total particulate pollution. Delhi's ongoing infrastructure projects, metro expansion, and building construction generate coarse particulate matter (PM10) and fine dust. Despite CPCB mandated dust suppression measures, compliance remains inconsistent.
+
+Waste burning accounts for approximately 8% of emissions. Open burning of municipal solid waste, plastic, and biomass occurs across the city, particularly in unauthorized dump sites and low-income areas. Landfill fires at Bhalswa, Ghazipur, and Okhla release toxic fumes.
+
+Crop stubble burning is a major seasonal source. During October-November, farmers in Punjab, Haryana, and western Uttar Pradesh burn rice paddy residue. Wind patterns carry smoke into Delhi, contributing 25-40% of PM2.5 during peak episodes. This can push AQI above 500 for consecutive days.
+
+Other sources include power plants (NTPC Badarpur, now decommissioned but Dadri and Jhajjar still operational), diesel generator sets used during power outages, and road dust re-suspension from unpaved surfaces.
+
+SEASONAL PATTERNS
+------------------
+October to January is the worst pollution period. Multiple factors converge: crop stubble burning peaks in October-November, Diwali fireworks cause acute spikes (AQI often exceeds 999 on Diwali night), winter temperature inversions trap pollutants near the surface, calm winds prevent dispersion, and increased biomass burning for heating in informal settlements.
+
+February to March sees gradual improvement as temperatures rise, the boundary layer lifts, and wind speeds increase. AQI typically ranges from 150 to 300 during this transition.
+
+April to June is relatively cleaner but dust storms from the Thar Desert in Rajasthan cause episodic PM10 spikes during May-June. These events can push AQI to 300-400 for 1-3 days, with PM10 being the dominant pollutant rather than PM2.5.
+
+July to September is the cleanest period. The southwest monsoon brings rain that washes out particulate matter. AQI frequently drops to Good (below 50) or Satisfactory (50-100) during active monsoon phases. Humidity reduces dust re-suspension. This is the best period for outdoor activities in Delhi.
+
+GEOGRAPHIC HOTSPOTS IN DELHI
+------------------------------
+Anand Vihar: Consistently one of Delhi's most polluted stations. Located near the Inter-State Bus Terminal (ISBT), heavy diesel bus and truck traffic drives high PM2.5 and NO2. Nearby industrial areas in East Delhi compound the problem. Average winter AQI routinely exceeds 400.
+
+ITO (Income Tax Office): Central Delhi traffic intersection with extremely high vehicular density. NO2 levels among the highest in the city. Commuters at this junction face prolonged exposure during traffic jams.
+
+Dwarka: Southwest Delhi residential area affected by construction activity from ongoing development projects and dust from Najafgarh drain area. PM10 levels are particularly elevated.
+
+Jahangirpuri: North Delhi area near the Bhalswa landfill site. Frequent landfill fires and waste burning push AQI to severe levels even during moderate pollution periods across the rest of the city.
+
+Mundka: West Delhi industrial area with numerous small-scale manufacturing units. Industrial emissions combined with highway traffic on NH-9 create persistent pollution hotspot conditions.
+
+Other notable stations include RK Puram (high traffic density), Punjabi Bagh (vehicular and commercial), and Wazirpur (industrial emissions).
+
+MONITORING INFRASTRUCTURE
+--------------------------
+Delhi has 38 continuous ambient air quality monitoring stations operated by CPCB (Central Pollution Control Board) and DPCC (Delhi Pollution Control Committee). These stations measure PM2.5, PM10, NO2, SO2, CO, O3, and NH3 in real time. Data is updated hourly and published on the CPCB CAAQMS portal and the SAMEER app. Station density varies, with higher coverage in central and south Delhi compared to outer areas.
