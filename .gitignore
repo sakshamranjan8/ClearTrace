@@ -9,7 +9,25 @@ data/features/*.csv
 !data/features/features_core_v1.csv
 !data/features/features_core_v2.csv
 .DS_Store
+
 .vscode/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+*.db
+reports_images/
+
+.vscode/
+
+data/cache/
+logs/
+
+
+.streamlit/secrets.toml
+.streamlit/cache/
 
 # Module 3: generated artifacts
 data/faiss_index/

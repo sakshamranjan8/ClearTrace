@@ -1,6 +1,6 @@
 # Core data pipeline
 numpy
-pandas
+pandas>=2.0
 requests
 python-dotenv
 
@@ -13,12 +13,24 @@ windrose
 jupyterlab
 ipykernel
 
-# Development & Training (Not used in production inference)
+# Model training and inference
 scikit-learn
-
-# Loading saved models and serving predictions
 joblib
 catboost
+
+# Streamlit frontend
+streamlit>=1.36
+plotly>=5.20
+folium>=0.16
+streamlit-folium>=0.21
+streamlit-geolocation==0.0.10
+
+# Chatbot
+anthropic>=0.30
+
+# FastAPI backend
+fastapi
+uvicorn[standard]
 
 # Module 3: Attribution Engine + RAG AI Chatbot
 fastapi
