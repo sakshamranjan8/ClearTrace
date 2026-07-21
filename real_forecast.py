@@ -1,58 +1,40 @@
-"""
-real_forecast.py
-Replaces the synthetic forecast.py with the actual trained models delivered by
-the forecasting teammate: 24 CatBoost models (models/horizon_01h.joblib ...
-horizon_24h.joblib), one per forecast hour, trained on features_core_v2.csv.
+"""Frontend adapter for the ClearTrace FastAPI forecast service.
+
+The public functions keep the shape used by the Streamlit app and the
+existing chatbot while replacing the frozen CSV/model prediction path with
+the live ``GET /forecast`` endpoint.
 """
 
-import joblib
-import pandas as pd
-from pathlib import Path
 from functools import lru_cache
+import os
+from pathlib import Path
+
+import pandas as pd
+import requests
+
 
 HERE = Path(__file__).parent
+API_BASE_URL = os.getenv("CLEARTRACE_API_URL", "http://127.0.0.1:8000").rstrip("/")
+API_TIMEOUT_SECONDS = float(os.getenv("CLEARTRACE_API_TIMEOUT_SECONDS", "15"))
 
-# Looks for the delivered files in your sibling ClearTrace/ folder
-if (HERE / "ml_assets" / "models").exists():
-    MODELS_DIR = HERE / "ml_assets" / "models"
+if (HERE / "ml_assets" / "data" / "features_core_v2.csv").exists():
     FEATURES_CSV = HERE / "ml_assets" / "data" / "features_core_v2.csv"
 else:
-    MODELS_DIR = HERE / "models"
     FEATURES_CSV = HERE / "data" / "features" / "features_core_v2.csv"
-
-MODEL_FEATURE_COLUMNS = None
-
-
-@lru_cache(maxsize=1)
-def _load_models():
-    """Load all 24 horizon models once and cache them for the app's lifetime."""
-    models = {}
-    for h in range(1, 25):
-        path = MODELS_DIR / f"horizon_{h:02d}h.joblib"
-        models[h] = joblib.load(path)
-    return models
-
-
-@lru_cache(maxsize=1)
-def _load_feature_table():
-    df = pd.read_csv(FEATURES_CSV, parse_dates=["timestamp_hour"])
-    return df
 
 
 @lru_cache(maxsize=1)
 def list_stations():
-    """Returns [(station_name, lat, lon), ...] for the 38 real Delhi stations."""
-    df = _load_feature_table()
-    stations = df[["station_name", "latitude", "longitude"]].drop_duplicates()
-    return sorted(stations.itertuples(index=False, name=None), key=lambda r: r[0])
-
-
-def _latest_valid_row(station_name):
-    df = _load_feature_table()
-    station_rows = df[(df["station_name"] == station_name) & (df["aqi_calculation_valid"] == True)]  # noqa: E712
-    if station_rows.empty:
-        return None
-    return station_rows.sort_values("timestamp_hour").iloc[-1]
+    """Return the station selector metadata without loading model assets."""
+    df = pd.read_csv(
+        FEATURES_CSV,
+        usecols=["station_name", "latitude", "longitude"],
+    )
+    stations = df.drop_duplicates()
+    return sorted(
+        stations.itertuples(index=False, name=None),
+        key=lambda row: row[0],
+    )
 
 
 def aqi_category(aqi):
@@ -69,54 +51,159 @@ def aqi_category(aqi):
     return "Severe"
 
 
-def generate_forecast(location, hours=24, citizen_boost=0):
-    """Same function name and same return shape as the old forecast.py,
-    so app.py barely needs to change."""
-    hours = min(hours, 24)
-    models = _load_models()
-    row = _latest_valid_row(location)
+def _station_coordinates(location):
+    for station_name, latitude, longitude in list_stations():
+        if station_name == location:
+            return float(latitude), float(longitude)
+    return None, None
 
-    if row is None:
-        return {
-            "location": location, "lat": None, "lon": None,
-            "generated_at": None, "hourly": [], "error": "no_valid_recent_data",
-        }
 
-    feature_cols = models[1].feature_names_
-    x = row[feature_cols].to_frame().T
-    x["station_name"] = str(row["station_name"])
-
-    base_time = row["timestamp_hour"]
-    points = []
-    for h in range(1, hours + 1):
-        pred = float(models[h].predict(x)[0])
-        pred = max(pred + citizen_boost, 0)
-        ts = base_time + pd.Timedelta(hours=h)
-        points.append({
-            "timestamp": ts.isoformat(),
-            "hour_offset": h,
-            "aqi": round(pred, 1),
-            "pm25": round(pred * 0.6, 1),
-            "category": aqi_category(pred),
-        })
-
+def _error_forecast(location, latitude, longitude, code, message):
     return {
         "location": location,
-        "lat": float(row["latitude"]),
-        "lon": float(row["longitude"]),
-        "generated_at": base_time.isoformat(),
-        "as_of_note": f"Based on last valid reading at {base_time} (frozen dataset, not live yet)",
-        "current_aqi": float(row["current_aqi"]),
+        "lat": latitude,
+        "lon": longitude,
+        "generated_at": None,
+        "hourly": [],
+        "nearest_stations": [],
+        "available_forecast_hours": 0,
+        "error": code,
+        "error_message": message,
+    }
+
+
+def generate_forecast(
+    location=None,
+    hours=24,
+    citizen_boost=0,
+    *,
+    latitude=None,
+    longitude=None,
+):
+    """Request a coordinate forecast and adapt it for existing consumers.
+
+    ``location`` remains supported for the chatbot and station dropdown.
+    New frontend code can pass ``latitude`` and ``longitude`` explicitly.
+    ``citizen_boost`` is retained only for signature compatibility; live model
+    predictions are never modified in the frontend.
+    """
+    del citizen_boost
+
+    hours = max(1, min(int(hours), 24))
+    if latitude is None or longitude is None:
+        latitude, longitude = _station_coordinates(location)
+
+    if latitude is None or longitude is None:
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "missing_coordinates",
+            "Latitude and longitude are required for a forecast.",
+        )
+
+    latitude = float(latitude)
+    longitude = float(longitude)
+
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}/forecast",
+            params={"latitude": latitude, "longitude": longitude},
+            timeout=API_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except requests.Timeout:
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "forecast_api_timeout",
+            "The forecast service did not respond in time.",
+        )
+    except requests.RequestException as error:
+        detail = None
+        if error.response is not None:
+            try:
+                detail = error.response.json().get("detail")
+            except (ValueError, AttributeError):
+                detail = None
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "forecast_api_unavailable",
+            detail or "The forecast service is unavailable.",
+        )
+    except (TypeError, ValueError) as error:
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "invalid_forecast_response",
+            f"The forecast service returned invalid JSON: {error}",
+        )
+
+    raw_points = payload.get("forecast")
+    if not isinstance(raw_points, list):
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "invalid_forecast_response",
+            "The forecast response does not contain a forecast array.",
+        )
+
+    points = []
+    try:
+        for future_index, point in enumerate(raw_points[:hours], start=1):
+            predicted_aqi = float(point["predicted_aqi"])
+            points.append(
+                {
+                    "timestamp": point["timestamp"],
+                    "hour_offset": future_index,
+                    "model_horizon_hours": point.get("horizon_hours"),
+                    "aqi": round(predicted_aqi, 2),
+                    "category": point.get("category") or aqi_category(predicted_aqi),
+                }
+            )
+    except (KeyError, TypeError, ValueError) as error:
+        return _error_forecast(
+            location,
+            latitude,
+            longitude,
+            "invalid_forecast_response",
+            f"A forecast point failed validation: {error}",
+        )
+
+    return {
+        "location": location or "Current location",
+        "lat": latitude,
+        "lon": longitude,
+        "generated_at": payload.get("generated_at"),
+        "forecast_origin": payload.get("forecast_origin"),
+        "cache_updated_at": payload.get("cache_updated_at"),
+        "is_stale": bool(payload.get("is_stale", False)),
+        "requested_forecast_hours": payload.get("requested_forecast_hours", 24),
+        "available_forecast_hours": len(points),
+        "nearest_stations": payload.get("nearest_stations", []),
         "hourly": points,
+        "error": None,
     }
 
 
 def forecast_summary(forecast, window_hours=24):
-    pts = forecast["hourly"][:window_hours]
+    pts = forecast.get("hourly", [])[:window_hours]
     if not pts:
-        return {"avg_aqi": None, "peak_aqi": None, "peak_time": None, "category": "Unknown"}
-    avg = sum(p["aqi"] for p in pts) / len(pts)
-    peak = max(pts, key=lambda p: p["aqi"])
+        return {
+            "avg_aqi": None,
+            "peak_aqi": None,
+            "peak_time": None,
+            "category": "Unknown",
+        }
+
+    avg = sum(point["aqi"] for point in pts) / len(pts)
+    peak = max(pts, key=lambda point: point["aqi"])
     return {
         "avg_aqi": round(avg, 1),
         "peak_aqi": peak["aqi"],

@@ -9,7 +9,7 @@ data/features/*.csv
 !data/features/features_core_v1.csv
 !data/features/features_core_v2.csv
 .DS_Store
-<<<<<<< HEAD
+
 .vscode/
 *.py[oc]
 build/
@@ -19,6 +19,10 @@ wheels/
 .venv
 *.db
 reports_images/
-=======
+
 .vscode/
->>>>>>> ffb37c0fa518e9ec973836b3647764c239c73ad5
+
+
+
+.streamlit/secrets.toml
+.streamlit/cache/
