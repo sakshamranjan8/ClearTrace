@@ -22,6 +22,8 @@ reports_images/
 
 .vscode/
 
+data/cache/
+logs/
 
 
 .streamlit/secrets.toml
