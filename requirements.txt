@@ -31,3 +31,10 @@ anthropic>=0.30
 # FastAPI backend
 fastapi
 uvicorn[standard]
+
+# Module 3: Attribution Engine + RAG AI Chatbot
+groq
+faiss-cpu
+sentence-transformers
+httpx
+pydantic

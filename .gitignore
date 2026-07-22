@@ -28,3 +28,6 @@ logs/
 
 .streamlit/secrets.toml
 .streamlit/cache/
+
+# Module 3: generated artifacts
+data/faiss_index/

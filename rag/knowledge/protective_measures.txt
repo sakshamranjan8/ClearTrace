@@ -1,0 +1,62 @@
+PROTECTIVE MEASURES AGAINST AIR POLLUTION
+==========================================
+
+MASK GUIDANCE
+--------------
+N95 and KN95 masks are recommended when the AQI exceeds 200 (Poor category). These masks filter at least 95% of airborne particles down to 0.3 microns, which includes the most harmful PM2.5 fraction. Surgical masks and cloth masks do NOT provide adequate protection against fine particulate matter.
+
+Proper mask fit is critical. The mask must seal tightly around the nose and chin with no gaps. Facial hair reduces seal effectiveness by up to 60%. Children require child-sized N95 masks — adult masks leave gaps around small faces. Replace disposable N95 masks after 8-10 hours of cumulative use or when breathing becomes noticeably harder.
+
+For outdoor workers requiring extended mask use, N95 masks with exhalation valves are recommended as they reduce heat buildup and breathing resistance. Valve masks are suitable for source-free environments but should not be used in medical settings.
+
+At AQI 100-200 (Moderate), basic masks are optional for the general population but recommended for sensitive groups (children, elderly, asthma patients, pregnant women) during outdoor commutes lasting over 20 minutes.
+
+AIR PURIFIERS FOR INDOOR USE
+------------------------------
+HEPA (High Efficiency Particulate Air) filters capture 99.97% of particles at 0.3 microns. A HEPA air purifier is the most effective indoor protection against PM2.5 infiltration.
+
+Room size matching is essential. Check the purifier's CADR (Clean Air Delivery Rate) rating. For a standard bedroom of 150 square feet, a CADR of 150 cubic meters per hour is sufficient. For a living room of 300 square feet, a CADR of at least 300 cubic meters per hour is needed. The purifier should cycle the room air at least 5 times per hour.
+
+Activated carbon filters, often included alongside HEPA, help reduce gaseous pollutants like NO2 and volatile organic compounds. Replace HEPA filters every 6-12 months depending on usage intensity. In Delhi's severe pollution season (November-January), filters may need replacement every 3-4 months.
+
+Budget alternative: A DIY purifier using a HEPA-rated furnace filter attached to a box fan can reduce indoor PM2.5 by 60-80% at a fraction of the cost.
+
+INDOOR VS OUTDOOR RISK MANAGEMENT
+------------------------------------
+Keep all windows and doors closed when AQI exceeds 150. Indoor PM2.5 can be 30-50% of outdoor levels even with windows closed due to infiltration through gaps. Running a HEPA purifier brings this down to 10-20% of outdoor levels.
+
+Avoid using exhaust fans that pull outdoor air indoors during high pollution episodes. Kitchen chimneys with outdoor venting are acceptable as they create slight negative pressure only in the kitchen area.
+
+Do not burn incense, candles, or mosquito coils indoors during high AQI periods. These add PM2.5 to indoor air. Avoid deep frying, which generates significant indoor particulate matter.
+
+Seal gaps around windows and doors using weatherstripping tape. Focus on rooms where you spend the most time, especially bedrooms where you spend 6-8 hours breathing while sleeping.
+
+COMMUTING PROTECTION
+----------------------
+Set vehicle air conditioning to recirculate mode (not fresh air mode) when AQI exceeds 150. This prevents drawing polluted outdoor air into the cabin. Modern car cabin filters reduce PM2.5 by 40-60%, but recirculate mode prevents fresh intake entirely.
+
+Prefer the Delhi Metro or enclosed AC buses over two-wheelers, autorickshaws, or walking during high pollution days. Metro stations are partially enclosed and have lower PM2.5 than roadside levels. Two-wheeler riders at traffic signals are exposed to PM2.5 concentrations 2-3 times higher than ambient monitoring station readings.
+
+If cycling or walking is unavoidable, choose routes through parks and residential streets rather than alongside major arterial roads. Pollution drops measurably even 50-100 meters away from heavy traffic corridors.
+
+HYDRATION AND DIET
+--------------------
+Drink at least 3-4 liters of water daily during high pollution periods. Adequate hydration helps the body's mucociliary clearance mechanism expel inhaled particulate matter.
+
+Antioxidant-rich foods help combat oxidative stress from pollution exposure. Include vitamin C sources (amla, citrus fruits, bell peppers), vitamin E (nuts, seeds, spinach), omega-3 fatty acids (flaxseed, walnuts, fish), and anti-inflammatory spices (turmeric, ginger). Jaggery (gur) is traditionally used in Delhi to help clear respiratory passages.
+
+Avoid outdoor street food during severe pollution as it accumulates surface contamination from ambient particulate matter.
+
+EXERCISE TIMING AND GUIDANCE
+------------------------------
+Best exercise times during pollution season: early morning before 6 AM (before traffic peaks) or late evening after 8 PM (after rush hour dissipation). However, winter mornings in Delhi (November-January) can have high pollution due to temperature inversions — always check real-time AQI before exercising outdoors.
+
+Avoid exercising between 8-10 AM and 5-8 PM when vehicular emissions peak. Exercise near green spaces (Lodhi Garden, Sanjay Van, Deer Park) where tree canopy provides partial filtration and PM levels are 15-25% lower than roadside.
+
+Shift to indoor exercise (gym, yoga, home workouts) when AQI exceeds 150. During severe episodes (AQI above 400), even indoor exercise should be reduced in intensity as increased breathing rate draws more particles deep into the lungs.
+
+SCHOOL AND WORKPLACE GUIDELINES
+---------------------------------
+Schools should cancel outdoor sports and assemblies when AQI exceeds 200. CPCB guidelines recommend school closure when AQI remains above 400 for 48 hours. Classrooms should have at least one HEPA purifier running during the pollution season.
+
+Workplaces should offer work-from-home options when AQI exceeds 300. Offices should keep HVAC systems on recirculate with regular filter changes. Provide N95 masks to employees who must commute during severe AQI events.

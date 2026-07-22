@@ -1,0 +1,85 @@
+CPCB NATIONAL AIR QUALITY INDEX (NAQI) GUIDELINES
+===================================================
+
+OVERVIEW
+--------
+The Central Pollution Control Board (CPCB) of India developed the National Air Quality Index (NAQI) to communicate air quality status to the public in a simple, uniform format. The AQI transforms complex pollutant concentration data into a single number on a scale of 0 to 500. Higher AQI values indicate worse air quality and greater health concern.
+
+AQI CATEGORIES AND BREAKPOINTS
+-------------------------------
+The CPCB NAQI defines six categories:
+
+Good (0-50): Air quality is satisfactory and poses little or no health risk. Minimal impact on health for all population groups.
+
+Satisfactory (51-100): Air quality is acceptable. Minor breathing discomfort may occur in sensitive individuals after prolonged outdoor exposure.
+
+Moderate (101-200): Breathing discomfort may occur in people with lung disease, asthma, heart disease, children, and older adults. General public is less likely to be affected.
+
+Poor (201-300): Breathing discomfort on prolonged exposure for most people. People with heart or lung disease, children, and older adults should limit prolonged outdoor exertion.
+
+Very Poor (301-400): Respiratory illness on prolonged exposure. Significant aggravation of symptoms in people with lung and heart disease. Widespread impacts across the general population.
+
+Severe (401-500): Serious health impacts even on healthy people. Emergency conditions with respiratory effects on large sections of the population. Avoid all outdoor physical activity.
+
+POLLUTANT-SPECIFIC BREAKPOINTS (24-HOUR AVERAGE UNLESS NOTED)
+--------------------------------------------------------------
+PM2.5 (micrograms per cubic meter, 24h average):
+  Good: 0-30
+  Satisfactory: 31-60
+  Moderate: 61-90
+  Poor: 91-120
+  Very Poor: 121-250
+  Severe: 251-500 (reported up to 500)
+
+PM10 (micrograms per cubic meter, 24h average):
+  Good: 0-50
+  Satisfactory: 51-100
+  Moderate: 101-250
+  Poor: 251-350
+  Very Poor: 351-430
+  Severe: 431-600 (reported up to 600)
+
+NO2 (micrograms per cubic meter, 24h average):
+  Good: 0-40
+  Satisfactory: 41-80
+  Moderate: 81-180
+  Poor: 181-280
+  Very Poor: 281-400
+  Severe: 401-600 (reported up to 600)
+
+SO2 (micrograms per cubic meter, 24h average):
+  Good: 0-40
+  Satisfactory: 41-80
+  Moderate: 81-380
+  Poor: 381-800
+  Very Poor: 801-1600
+  Severe: 1601-2400 (reported up to 2400)
+
+CO (milligrams per cubic meter, 8h average):
+  Good: 0-1.0
+  Satisfactory: 1.1-2.0
+  Moderate: 2.1-10
+  Poor: 10.1-17
+  Very Poor: 17.1-34
+  Severe: 34.1-46 (reported up to 46)
+
+O3 (micrograms per cubic meter, 8h average):
+  Good: 0-50
+  Satisfactory: 51-100
+  Moderate: 101-168
+  Poor: 169-208
+  Very Poor: 209-748
+  Severe: 749-1000 (reported up to 1000)
+
+AQI CALCULATION METHOD
+-----------------------
+The overall AQI is determined using the maximum sub-index method. A sub-index is calculated for each monitored pollutant by linear interpolation within the appropriate breakpoint range. The highest sub-index among all pollutants becomes the reported AQI value for that station.
+
+Sub-index formula: Ip = ((IHI - ILO) / (BHI - BLO)) * (Cp - BLO) + ILO
+Where Ip is the sub-index, Cp is the pollutant concentration, BHI and BLO are breakpoint concentrations, and IHI and ILO are the corresponding AQI breakpoint values.
+
+Averaging periods: PM2.5, PM10, NO2, and SO2 use 24-hour rolling averages. CO and O3 use 8-hour rolling averages.
+
+CPCB requires a minimum of 3 sub-indices to compute a valid AQI, and at least one of those must be a particulate matter sub-index (PM2.5 or PM10). If fewer than 3 sub-indices are available, the AQI is reported as insufficient data.
+
+The pollutant responsible for the highest sub-index is identified as the dominant or predominant pollutant for that monitoring period.

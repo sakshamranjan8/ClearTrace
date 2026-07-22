@@ -1,0 +1,75 @@
+HEALTH RECOMMENDATIONS BY AQI LEVEL AND USER TYPE
+====================================================
+
+OVERVIEW
+--------
+Air pollution affects different population groups with varying severity. ClearTrace provides tailored health recommendations based on AQI category and user vulnerability profile. The six user categories are: adult, child, elderly, asthma, outdoor_worker, and pregnant_woman.
+
+ADULTS (GENERAL POPULATION)
+----------------------------
+Good (0-50): No restrictions. Enjoy outdoor activities freely.
+Satisfactory (51-100): No restrictions for most adults. Unusually sensitive individuals should monitor symptoms.
+Moderate (101-200): Reduce prolonged outdoor exertion if experiencing discomfort. Limit jogging or cycling sessions to 30 minutes.
+Poor (201-300): Avoid prolonged outdoor physical activity. Shift exercise indoors. Use N95 mask if commuting by two-wheeler or walking.
+Very Poor (301-400): Minimize all outdoor exposure. Work from home if possible. Use air purifiers indoors.
+Severe (401-500): Avoid all outdoor activity. Stay indoors with windows sealed. Use air purifiers on maximum setting. Consider relocating temporarily if exposure exceeds 48 hours.
+
+CHILDREN (UNDER 14 YEARS)
+---------------------------
+Children breathe 50% more air per kilogram of body weight compared to adults. Their lungs are still developing, making them especially vulnerable to particulate pollution.
+Good (0-50): Normal outdoor play and school activities.
+Satisfactory (51-100): Normal activities. Ensure hydration during outdoor play.
+Moderate (101-200): Limit outdoor play to 1 hour. Schools should shift PE classes indoors.
+Poor (201-300): No outdoor play or sports. Schools should cancel outdoor activities and close windows.
+Very Poor (301-400): Schools should consider closure or shift to online mode. Keep children indoors at all times.
+Severe (401-500): Schools must close. Children must remain indoors. Seek medical attention if child shows coughing, wheezing, or difficulty breathing.
+
+ELDERLY (65+ YEARS)
+--------------------
+Older adults have reduced lung capacity and higher prevalence of cardiovascular and respiratory conditions. PM2.5 exposure increases risk of heart attack and stroke in this group.
+Good (0-50): Normal activities. Light walking and yoga are encouraged.
+Satisfactory (51-100): Normal activities with adequate hydration.
+Moderate (101-200): Limit outdoor walks to 20 minutes. Avoid areas near heavy traffic.
+Poor (201-300): Stay indoors. Ensure regular medication for heart and lung conditions.
+Very Poor (301-400): Remain indoors with air purification. Monitor blood pressure and oxygen saturation.
+Severe (401-500): Medical alert level. Have emergency medications ready. Call doctor if experiencing chest pain, breathlessness, or dizziness.
+
+ASTHMA PATIENTS
+-----------------
+Asthma patients face significantly heightened risk as air pollution is a major trigger. PM2.5 above 60 micrograms per cubic meter (Moderate AQI) can trigger bronchospasm.
+Good (0-50): Normal activity. Carry rescue inhaler as standard precaution.
+Satisfactory (51-100): Normal activity with inhaler on hand. Pre-medicate before outdoor exercise if prescribed.
+Moderate (101-200): Limit outdoor exposure to 30 minutes. Use preventive inhaler before going outside. Avoid traffic-dense routes.
+Poor (201-300): Avoid outdoor exposure entirely. Keep rescue inhaler accessible. Use nebulizer if prescribed.
+Very Poor (301-400): Stay indoors with purifier running. Increase controller medication as directed by doctor. Monitor peak flow readings.
+Severe (401-500): Emergency preparedness. Have action plan ready. Seek immediate medical attention for any symptom worsening.
+
+OUTDOOR WORKERS
+-----------------
+Construction workers, traffic police, delivery personnel, and street vendors face 6-8 hours of continuous exposure. Occupational health limits recommend limiting heavy exertion above AQI 200.
+Good (0-50): Normal work schedule.
+Satisfactory (51-100): Normal work with adequate water breaks every 2 hours.
+Moderate (101-200): Take 15-minute indoor breaks every 2 hours. Wear basic face mask for dust-heavy tasks.
+Poor (201-300): Wear N95 mask continuously. Take 15-minute breaks every hour. Reduce heavy physical labor by 50%.
+Very Poor (301-400): Wear N95 mask. Limit outdoor work to 4 hours with hourly breaks. Shift heavy tasks to early morning (before 7 AM) when AQI may be lower.
+Severe (401-500): Suspend outdoor work if possible. If work is essential, wear N95 mask, limit shifts to 2 hours, and provide indoor rest areas.
+
+PREGNANT WOMEN
+---------------
+Pregnant women face dual risk: maternal respiratory stress and fetal developmental impact. PM2.5 exposure during pregnancy is linked to low birth weight and preterm delivery. Vulnerability is similar to elderly populations.
+Good (0-50): Normal activities with light outdoor exercise.
+Satisfactory (51-100): Normal activities. Gentle walks are beneficial.
+Moderate (101-200): Limit outdoor time to 30 minutes. Avoid high-traffic areas during commute.
+Poor (201-300): Stay indoors. Use air purifier in bedroom and living areas.
+Very Poor (301-400): Remain indoors. Consult obstetrician about any respiratory symptoms.
+Severe (401-500): Medical alert. Stay in purified indoor environment. Seek medical help for any breathing difficulty, headache, or dizziness.
+
+ACTIVITY-SPECIFIC GUIDANCE
+---------------------------
+Jogging and running: Avoid outdoor runs above AQI 150. During moderate AQI (101-200), run only in parks away from roads and limit to 30 minutes. Never run alongside major roads regardless of AQI.
+Cycling and commuting: Use N95 mask when cycling above AQI 100. Prefer metro or enclosed AC vehicles above AQI 200.
+Morning walks: Best before 6 AM or after 7 PM when traffic emissions are lower. However, winter mornings (Nov-Jan) may have higher pollution due to temperature inversion — check real-time AQI before heading out.
+
+WHEN TO SEEK MEDICAL ATTENTION
+-------------------------------
+Seek immediate medical attention if experiencing: persistent cough lasting over 2 days during high AQI; wheezing or whistling sound while breathing; chest tightness or pain; shortness of breath at rest; blood oxygen saturation below 94%; blue discoloration of lips or fingertips; confusion or dizziness in elderly. Children showing rapid breathing, nasal flaring, or refusal to eat should be taken to a doctor immediately.
