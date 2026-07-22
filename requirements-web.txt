@@ -1,0 +1,5 @@
+# Extra dependencies for the optional React backend-for-frontend.
+# The main project requirements already provide pandas and requests.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+python-multipart>=0.0.9,<1
