@@ -231,26 +231,6 @@ def _get_attribution_context(lat: float, lon: float) -> dict:
         return {}
 
 
-async def _get_forecast_context(lat: float, lon: float) -> dict:
-    """Fetch AQI forecast from Module 2 (or mock).
-
-    Uses the new nested format with forecast array and nearest_stations.
-    """
-    mock = get_mock_forecast()
-    try:
-        result = await fetch_teammate_api(
-            url=settings.MODULE2_FORECAST_URL,
-            params={"lat": lat, "lon": lon},
-            mock_fallback=mock,
-        )
-        # Log extracted AQI from the new format
-        aqi = extract_current_aqi(result)
-        station = get_nearest_station_name(result)
-        print(f"[CHATBOT] Forecast AQI: {aqi} (station: {station})")
-        return result
-    except Exception as e:
-        print(f"[CHATBOT] Forecast fetch failed: {e}")
-        return mock  # Graceful degradation
 
 
 async def _get_reports_context(lat: float, lon: float) -> dict:
@@ -575,3 +555,23 @@ def _build_recommendations(
             unique_recs.append(r)
 
     return unique_recs
+
+
+async def _get_forecast_context(lat: float, lon: float) -> dict:
+    fallback = get_mock_forecast() if settings.MOCK_MODE else {}
+
+    try:
+        result = await fetch_teammate_api(
+            url=settings.MODULE2_FORECAST_URL,
+            params={"latitude": lat, "longitude": lon},
+            mock_fallback=fallback,
+        )
+
+        if not result.get("forecast"):
+            return {}
+
+        return result
+
+    except Exception as error:
+        print(f"[CHATBOT] Forecast unavailable: {error}")
+        return fallback
