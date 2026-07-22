@@ -14,7 +14,7 @@ ISSUE #6: Super prompt is truncated to stay within Groq's 6000 tokens/min limit.
 ISSUE #7: hazard_level and recommendations come from calculate_risk(), NOT the LLM.
            The LLM only generates the answer text.
 """
-
+import database
 from groq import Groq
 
 from rag.config import settings
@@ -35,7 +35,7 @@ from rag.utils import (
     truncate_context,
     MOCK_REPORTS,
 )
-from rag import attribution
+import real_attribution as attribution
 from rag import vector_store
 
 
@@ -219,33 +219,72 @@ def _get_rag_context(question: str) -> list[str]:
         print(f"[CHATBOT] RAG search failed: {e}")
         return []
 
-
 def _get_attribution_context(lat: float, lon: float) -> dict:
-    """Get source attribution for the user's location."""
     try:
-        result = attribution.get_attribution(lat, lon)
-        print(f"[CHATBOT] Attribution: {result.get('sources', {})}")
-        return result
-    except Exception as e:
-        print(f"[CHATBOT] Attribution failed: {e}")
+        return attribution.get_source_indicators(
+            lat,
+            lon,
+            radius_km=5.0,
+        )
+    except Exception as error:
+        print(f"[CHATBOT] Source indicators unavailable: {error}")
         return {}
 
 
+async def _get_forecast_context(lat: float, lon: float) -> dict:
+    fallback = get_mock_forecast() if settings.MOCK_MODE else {}
+
+    try:
+        result = await fetch_teammate_api(
+            url=settings.MODULE2_FORECAST_URL,
+            params={"latitude": lat, "longitude": lon},
+            mock_fallback=fallback,
+        )
+
+        if not result.get("forecast"):
+            return {}
+
+        return result
+
+    except Exception as error:
+        print(f"[CHATBOT] Forecast unavailable: {error}")
+        return fallback
 
 
 async def _get_reports_context(lat: float, lon: float) -> dict:
-    """Fetch crowd reports from Module 4 (or mock)."""
     try:
-        result = await fetch_teammate_api(
-            url=settings.MODULE4_REPORTS_URL,
-            params={"lat": lat, "lon": lon},
-            mock_fallback=MOCK_REPORTS,
+        database.init_db()
+
+        nearby = database.get_nearby_reports(
+            lat,
+            lon,
+            radius_m=3000,
         )
-        print(f"[CHATBOT] Reports: {result.get('total_count', 0)} total")
-        return result
-    except Exception as e:
-        print(f"[CHATBOT] Reports fetch failed: {e}")
-        return MOCK_REPORTS  # Graceful degradation
+
+        verified = [
+            report
+            for report in nearby
+            if report["status"] == "verified"
+        ]
+
+        return {
+            "total_count": len(nearby),
+            "verified_count": len(verified),
+            "reports": [
+                {
+                    "description": report["description"],
+                    "category": report["category_guess"],
+                    "verified": True,
+                    "distance_m": report["distance_m"],
+                    "created_at": report["created_at"],
+                }
+                for report in verified[:10]
+            ],
+        }
+
+    except Exception as error:
+        print(f"[CHATBOT] Citizen reports unavailable: {error}")
+        return {}
 
 
 # ===========================================================================
@@ -346,23 +385,28 @@ def _build_super_prompt(
         )
 
     # --- Attribution (from our engine) ---
-    if attribution_data and attribution_data.get("sources"):
-        attr_lines = []
-        for cat, pct in sorted(
-            attribution_data["sources"].items(), key=lambda x: -x[1]
-        ):
-            evidence = attribution_data.get("evidence", {}).get(cat, "")
-            attr_lines.append(f"  {cat}: {pct}% — {evidence}")
-        attr_text = "\n".join(attr_lines)
+   # --- Nearby source indicators ---
+    if attribution_data.get("indicators"):
+        indicator_lines = []
 
-        confidence = attribution_data.get("confidence_score", "N/A")
-        sections.append(
-            f"\n== POLLUTION SOURCES ==\n"
-            f"Confidence: {confidence}\n"
-            f"{attr_text}"
+        for item in attribution_data["indicators"]:
+            indicator_lines.append(
+            f"- {item['label']}: {item['strength']} proximity signal; "
+            f"nearest mapped feature {item['nearest_distance_km']} km away."
         )
+
+        sections.append(
+           "\n== NEARBY SOURCE INDICATORS ==\n"
+           + "\n".join(indicator_lines)
+           + "\nIMPORTANT: These are proximity indicators, not pollution "
+           "contribution percentages.\n"
+           + attribution_data["disclaimer"]
+    )
     else:
-        sections.append("\n== POLLUTION SOURCES ==\nNo attribution data available.")
+        sections.append(
+            "\n== NEARBY SOURCE INDICATORS ==\n"
+            "No eligible mapped source indicators were found."
+    )
 
     # --- Crowd reports (from Module 4) ---
     if reports_data and reports_data.get("reports"):
@@ -555,23 +599,3 @@ def _build_recommendations(
             unique_recs.append(r)
 
     return unique_recs
-
-
-async def _get_forecast_context(lat: float, lon: float) -> dict:
-    fallback = get_mock_forecast() if settings.MOCK_MODE else {}
-
-    try:
-        result = await fetch_teammate_api(
-            url=settings.MODULE2_FORECAST_URL,
-            params={"latitude": lat, "longitude": lon},
-            mock_fallback=fallback,
-        )
-
-        if not result.get("forecast"):
-            return {}
-
-        return result
-
-    except Exception as error:
-        print(f"[CHATBOT] Forecast unavailable: {error}")
-        return fallback

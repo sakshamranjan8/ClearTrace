@@ -19,6 +19,23 @@ DB_PATH = Path(__file__).parent / "cleartrace.db"
 IMAGES_DIR = Path(__file__).parent / "reports_images"
 IMAGES_DIR.mkdir(exist_ok=True)
 
+
+def resolve_image_path(image_path):
+    """Resolve portable filenames and legacy absolute Windows image paths."""
+    if not image_path:
+        return None
+
+    # Extract only the filename, including from old Windows paths saved by a
+    # teammate. New reports store just this filename in SQLite.
+    filename = Path(str(image_path).replace("\\", "/")).name
+    local_path = IMAGES_DIR / filename
+
+    if local_path.is_file():
+        return str(local_path)
+
+    return None
+
+
 VERIFY_UPVOTES_NEEDED = 3
 DUPLICATE_RADIUS_METERS = 200
 DUPLICATE_WINDOW_HOURS = 24
@@ -35,6 +52,18 @@ def get_conn():
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+
+def _add_column_if_missing(conn, table_name, column_name, column_type):
+    """Apply a small SQLite migration for databases made by older app versions."""
+    existing_columns = {
+        row["name"]
+        for row in conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    }
+    if column_name not in existing_columns:
+        conn.execute(
+            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
+        )
 
 
 def init_db():
@@ -105,6 +134,11 @@ def init_db():
     )
     """)
 
+    # CREATE TABLE IF NOT EXISTS does not add new columns to an existing local
+    # database. These migrations keep old teammate databases compatible.
+    _add_column_if_missing(conn, "citizen_reports", "reporter_name", "TEXT")
+    _add_column_if_missing(conn, "report_votes", "voter_name", "TEXT")
+
     conn.commit()
     conn.close()
 
@@ -137,8 +171,16 @@ def reports_today_count(user_id):
     return count
 
 
-def create_report(lat, lon, description, category_guess, user_id, image_bytes=None, image_ext="jpg",
-                   reporter_name="Anonymous"):
+def create_report(
+    lat,
+    lon,
+    description,
+    category_guess,
+    user_id,
+    image_bytes=None,
+    image_ext="jpg",
+    reporter_name="Anonymous",
+):
     if not is_within_delhi(lat, lon):
         return {"status": "rejected", "reason": "Location is outside the Delhi NCR region."}
 
@@ -148,9 +190,18 @@ def create_report(lat, lon, description, category_guess, user_id, image_bytes=No
     report_id = str(uuid.uuid4())[:8]
     image_path = None
     if image_bytes is not None:
-        image_path = str(IMAGES_DIR / f"{report_id}.{image_ext}")
-        with open(image_path, "wb") as f:
+        safe_extension = str(image_ext).lower().lstrip(".")
+        if safe_extension not in {"jpg", "jpeg", "png"}:
+            safe_extension = "jpg"
+
+        filename = f"{report_id}.{safe_extension}"
+        local_path = IMAGES_DIR / filename
+
+        with open(local_path, "wb") as f:
             f.write(image_bytes)
+
+        # Store only the filename so the row works on every teammate's machine.
+        image_path = filename
 
     conn = get_conn()
     conn.execute(

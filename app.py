@@ -173,6 +173,23 @@ def render_source_card(indicator):
     )
 
 
+def render_report_image(column, image_path):
+    """Render a report photo without letting a stale/missing path break the page."""
+    resolver = getattr(database, "resolve_image_path", None)
+    resolved_image = resolver(image_path) if callable(resolver) else None
+
+    if not resolved_image:
+        column.caption("Photo unavailable")
+        return
+
+    try:
+        column.image(resolved_image, use_container_width=True)
+    except (FileNotFoundError, OSError):
+        # A teammate may have stored an absolute path that does not exist on
+        # this machine, or the image may have been removed after the query.
+        column.caption("Photo unavailable")
+
+
 try:
     STATIONS = forecast_mod.list_stations()
 except (FileNotFoundError, KeyError, ValueError) as error:
@@ -602,10 +619,8 @@ elif page == "📸 Report a Source":
     for report in nearby[:10]:
         with st.container(border=True):
             cols = st.columns([1, 3])
-            if report["image_path"]:
-                cols[0].image(report["image_path"], use_container_width=True)
-            else:
-                cols[0].caption("No photo")
+            render_report_image(cols[0], report.get("image_path"))
+
             cols[1].markdown(
                 f"**{report['category_guess']}** — {status_badge(report['status'])}"
             )
@@ -642,8 +657,8 @@ elif page == "✅ Verify Reports":
     for report in pending:
         with st.container(border=True):
             cols = st.columns([1, 3, 1])
-            if report["image_path"]:
-                cols[0].image(report["image_path"], use_container_width=True)
+            render_report_image(cols[0], report.get("image_path"))
+
             cols[1].markdown(f"**{report['category_guess']}**")
             cols[1].write(report["description"])
             cols[1].caption(
@@ -805,9 +820,24 @@ elif page == "💬 AQI Chatbot":
     try:
         import chatbot as chatbot_mod
     except Exception as error:
-        st.error("The chatbot is temporarily unavailable while it is being updated.")
+        st.error(
+            "The chatbot is temporarily unavailable while it is being updated."
+        )
         st.code(f"{type(error).__name__}: {error}")
         st.stop()
+
+    chat_location_key = (
+        location_mode,
+        round(effective_lat, 5),
+        round(effective_lon, 5),
+)
+
+    previous_key = st.session_state.get("chat_location_key")
+
+    if previous_key is not None and previous_key != chat_location_key:
+        st.session_state.chat_history = []
+
+    st.session_state.chat_location_key = chat_location_key
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
@@ -817,8 +847,8 @@ elif page == "💬 AQI Chatbot":
             st.write(text)
 
     sample_questions = [
-        f"Is it safe to jog in {location} tomorrow morning?",
-        f"Why is AQI high near {location}?",
+        f"Is it safe to jog near {location_label} tomorrow morning?",
+        f"Why is AQI high near {location_label}?",
         "What should a school do if AQI is severe?",
         "Which reports near me are verified?",
     ]
@@ -832,7 +862,12 @@ elif page == "💬 AQI Chatbot":
         with st.chat_message("user"):
             st.write(question)
         try:
-            response = chatbot_mod.answer_query(question, location, lat=effective_lat, lon=effective_lon)
+            response = chatbot_mod.answer_query(
+                question,
+                location,
+                lat=effective_lat,
+                lon=effective_lon,
+            )
         except Exception as error:
             st.error("The chatbot could not answer this request.")
             st.code(f"{type(error).__name__}: {error}")
