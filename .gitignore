@@ -14,11 +14,17 @@ data/features/*.csv
 *.py[oc]
 build/
 dist/
+node_modules/
 wheels/
 *.egg-info
 .venv
 *.db
 reports_images/
+
+# Optional React frontend
+frontend/.env
+frontend/dist/
+frontend/node_modules/
 
 .vscode/
 
