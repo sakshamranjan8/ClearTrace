@@ -33,8 +33,6 @@ fastapi
 uvicorn[standard]
 
 # Module 3: Attribution Engine + RAG AI Chatbot
-fastapi
-uvicorn[standard]
 groq
 faiss-cpu
 sentence-transformers

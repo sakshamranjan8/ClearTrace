@@ -1,25 +1,35 @@
 """
 chatbot.py
-Stands in for Member 3's POST /chat/query endpoint (Section 7C).
+Streamlit chatbot backend — tries the Module 3 RAG API first, then falls
+back to the original Claude / template pipeline.
 
-Always grounds on four sources, per the plan:
-  1. current/forecast AQI      -> forecast.py
-  2. attribution output        -> attribution.py
-  3. verified citizen reports  -> database.get_verified_reports / get_citizen_features
-  4. advisory/regulation docs  -> data/advisory_corpus.py
+Priority order:
+  1. Module 3 RAG API  (POST /chat/query on the RAG FastAPI server)
+     → Groq LLM + FAISS knowledge base + forecast + attribution + reports
+  2. Claude LLM        (if ANTHROPIC_API_KEY is set)
+     → Grounded on forecast + attribution + verified reports + advisory docs
+  3. Template fallback  (always available, no API key needed)
 
-If ANTHROPIC_API_KEY is set in the environment, the grounded context is
-passed to a real Claude call for a fluent answer. Otherwise it falls back to
-a template-based answer built from the same grounded context, so the demo
-works with zero external dependencies / no API key required.
+The Streamlit frontend calls ``answer_query(question, location, lat, lon)``.
+If lat/lon are provided, the RAG API gets exact coordinates.
+If only location is provided, coordinates are resolved from the forecast.
 """
 
 import os
+
+import requests
+
 import database
 import real_forecast as forecast_mod
 import real_health_risk as health_mod
 import real_attribution as attribution_mod
 from chatbot_data.advisory_corpus import keyword_search
+
+# ---------------------------------------------------------------------------
+# Module 3 RAG API configuration
+# ---------------------------------------------------------------------------
+RAG_API_URL = os.getenv("CLEARTRACE_RAG_URL", "http://127.0.0.1:8001")
+RAG_API_TIMEOUT = float(os.getenv("CLEARTRACE_RAG_TIMEOUT", "30"))
 
 SYSTEM_PROMPT = (
     "You are the ClearTrace AQI assistant for Delhi. Answer ONLY using the "
@@ -29,6 +39,56 @@ SYSTEM_PROMPT = (
     "cover something, say so plainly instead of guessing."
 )
 
+
+# ---------------------------------------------------------------------------
+# Module 3 RAG API caller (new)
+# ---------------------------------------------------------------------------
+
+def _rag_answer(question, lat, lon, user_category="adult"):
+    """Try to get an answer from the Module 3 RAG API.
+
+    Returns the full response dict on success, or None if the server
+    is unreachable or returns an error.
+    """
+    if lat is None or lon is None:
+        return None
+
+    try:
+        response = requests.post(
+            f"{RAG_API_URL}/chat/query",
+            json={
+                "question": question,
+                "lat": lat,
+                "lon": lon,
+                "user_category": user_category,
+            },
+            timeout=RAG_API_TIMEOUT,
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        # Map the RAG API response to the shape the frontend expects
+        sources_str = ", ".join(data.get("sources_used", []))
+        return {
+            "answer": data.get("answer", ""),
+            "sources_used": sources_str + ",rag_api",
+            "hazard_level": data.get("hazard_level", ""),
+            "recommendations": data.get("recommendations", []),
+        }
+    except requests.ConnectionError:
+        # RAG server not running — silent fallback
+        return None
+    except requests.Timeout:
+        print("[CHATBOT] RAG API timed out — falling back")
+        return None
+    except Exception as exc:
+        print(f"[CHATBOT] RAG API error: {exc} — falling back")
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Original context builder (unchanged)
+# ---------------------------------------------------------------------------
 
 def _build_context(location):
     fc = forecast_mod.generate_forecast(location)
@@ -77,6 +137,8 @@ def _build_context(location):
         "verified_nearby": verified_nearby,
         "docs": docs,
         "context_text": "\n".join(context_lines),
+        "lat": loc_meta[0],
+        "lon": loc_meta[1],
     }
 
 
@@ -142,7 +204,43 @@ def _claude_answer(question, ctx):
         return None
 
 
-def answer_query(question, location):
+# ---------------------------------------------------------------------------
+# Main entry point — used by Streamlit frontend
+# ---------------------------------------------------------------------------
+
+def answer_query(question, location, lat=None, lon=None, user_category="adult"):
+    """Answer a user question using the best available backend.
+
+    Priority:
+      1. Module 3 RAG API (if running)
+      2. Claude LLM (if ANTHROPIC_API_KEY is set)
+      3. Template fallback
+
+    Args:
+        question:       The user's natural-language question.
+        location:       Station name string (for context/fallback).
+        lat, lon:       Optional coordinates for Module 3 API.
+        user_category:  Vulnerability category (default: "adult").
+
+    Returns:
+        Dict with 'answer' and 'sources_used' keys.
+    """
+    # --- Step 0: If lat/lon are missing, resolve from forecast ---
+    if lat is None or lon is None:
+        try:
+            fc = forecast_mod.generate_forecast(location)
+            lat = fc.get("lat")
+            lon = fc.get("lon")
+        except Exception:
+            pass  # Continue without coordinates
+
+    # --- Step 1: Try Module 3 RAG API ---
+    rag_result = _rag_answer(question, lat, lon, user_category)
+    if rag_result is not None:
+        database.log_chat(question, rag_result["answer"], location, rag_result["sources_used"])
+        return rag_result
+
+    # --- Step 2 & 3: Fall back to Claude / template ---
     ctx = _build_context(location)
     answer = _claude_answer(question, ctx)
     used_llm = answer is not None

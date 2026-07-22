@@ -24,10 +24,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
-from app.config import settings
-from app.models import ChatRequest, ChatResponse, AttributionResponse
-from app import chatbot
-from app import vector_store
+from rag.config import settings
+from rag.models import ChatRequest, ChatResponse, AttributionResponse
+from rag import chatbot
+from rag import vector_store
 
 
 # ===========================================================================
@@ -187,7 +187,7 @@ async def get_attribution(
     """
     try:
         # Import here to trigger lazy loading on first call
-        from app.attribution import get_attribution as compute_attribution
+        from rag.attribution import get_attribution as compute_attribution
 
         result = compute_attribution(lat, lon)
         return result

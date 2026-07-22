@@ -5,7 +5,7 @@ that every other module imports.  Validates required keys at import time
 so the app fails fast with a clear message instead of crashing mid-request.
 
 Usage:
-    from app.config import settings
+    from rag.config import settings
     print(settings.GROQ_API_KEY)
 """
 
@@ -40,12 +40,12 @@ class Settings:
     def __init__(self):
         # --- Groq LLM ---
         self.GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-        self.GROQ_MODEL: str = os.getenv("GROQ_MODEL", "gemma2-9b-it")
+        self.GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
         # --- Teammate APIs ---
         self.MOCK_MODE: bool = os.getenv("MOCK_MODE", "true").lower() == "true"
         self.MODULE2_FORECAST_URL: str = os.getenv(
-            "MODULE2_FORECAST_URL", "http://localhost:8001/forecast"
+            "MODULE2_FORECAST_URL", "http://localhost:8000/forecast"
         )
         self.MODULE4_REPORTS_URL: str = os.getenv(
             "MODULE4_REPORTS_URL", "http://localhost:8002/reports"
@@ -65,7 +65,7 @@ class Settings:
         )
 
         # --- Knowledge base for RAG (Issue #3: explicit path resolution) ---
-        self.KNOWLEDGE_DIR: Path = PROJECT_ROOT / "app" / "knowledge"
+        self.KNOWLEDGE_DIR: Path = PROJECT_ROOT / "rag" / "knowledge"
         self.FAISS_INDEX_DIR: Path = PROJECT_ROOT / "data" / "faiss_index"
 
         # --- Logging ---
@@ -121,7 +121,7 @@ def validate_config(s: Settings) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Module-level singleton — every file does `from app.config import settings`
+# Module-level singleton — every file does `from rag.config import settings`
 # ---------------------------------------------------------------------------
 settings = Settings()
 validate_config(settings)

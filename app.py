@@ -832,7 +832,7 @@ elif page == "💬 AQI Chatbot":
         with st.chat_message("user"):
             st.write(question)
         try:
-            response = chatbot_mod.answer_query(question, location)
+            response = chatbot_mod.answer_query(question, location, lat=effective_lat, lon=effective_lon)
         except Exception as error:
             st.error("The chatbot could not answer this request.")
             st.code(f"{type(error).__name__}: {error}")

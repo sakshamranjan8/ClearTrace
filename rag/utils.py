@@ -19,7 +19,7 @@ from datetime import datetime, timezone, timedelta
 
 import httpx
 
-from app.config import settings
+from rag.config import settings
 
 
 # ---------------------------------------------------------------------------

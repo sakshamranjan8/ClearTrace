@@ -24,7 +24,7 @@ from pathlib import Path
 
 import numpy as np
 
-from app.config import settings
+from rag.config import settings
 
 
 # ===========================================================================

@@ -26,8 +26,8 @@ ISSUE #8 FIX: Confidence score uses an explicit formula.
 
 import pandas as pd
 
-from app.config import settings
-from app.utils import haversine_distance, get_current_ist_time
+from rag.config import settings
+from rag.utils import haversine_distance, get_current_ist_time
 
 
 # ===========================================================================

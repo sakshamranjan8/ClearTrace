@@ -17,8 +17,8 @@ ISSUE #7: hazard_level and recommendations come from calculate_risk(), NOT the L
 
 from groq import Groq
 
-from app.config import settings
-from app.utils import (
+from rag.config import settings
+from rag.utils import (
     calculate_risk,
     extract_current_aqi,
     extract_time_from_query,
@@ -35,8 +35,8 @@ from app.utils import (
     truncate_context,
     MOCK_REPORTS,
 )
-from app import attribution
-from app import vector_store
+from rag import attribution
+from rag import vector_store
 
 
 # ===========================================================================
