@@ -12,6 +12,10 @@ Citizen-report backend. This version adds:
 import sqlite3
 import math
 import uuid
+import base64
+import hashlib
+import hmac
+import secrets
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -40,6 +44,8 @@ VERIFY_UPVOTES_NEEDED = 3
 DUPLICATE_RADIUS_METERS = 200
 DUPLICATE_WINDOW_HOURS = 24
 MAX_REPORTS_PER_DAY = 10  # basic anti-spam limit per person
+SESSION_LIFETIME_DAYS = 7
+PASSWORD_HASH_ITERATIONS = 310_000
 
 SOURCE_CATEGORIES = ["construction", "traffic", "waste_burning", "dust", "industry", "other"]
 
@@ -48,9 +54,10 @@ DELHI_BOUNDS = {"lat_min": 28.30, "lat_max": 28.95, "lon_min": 76.75, "lon_max":
 
 
 def get_conn():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=15)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = WAL")
     return conn
 
 
@@ -69,6 +76,31 @@ def _add_column_if_missing(conn, table_name, column_name, column_type):
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        user_id TEXT PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        display_name TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        password_salt TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        last_login_at TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS user_sessions (
+        session_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        revoked_at TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    )
+    """)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS citizen_reports (
@@ -139,12 +171,173 @@ def init_db():
     _add_column_if_missing(conn, "citizen_reports", "reporter_name", "TEXT")
     _add_column_if_missing(conn, "report_votes", "voter_name", "TEXT")
 
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_sessions_token_hash "
+        "ON user_sessions(token_hash)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_sessions_user_id "
+        "ON user_sessions(user_id)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_reports_user_id "
+        "ON citizen_reports(user_id)"
+    )
+
     conn.commit()
     conn.close()
 
 
 def _now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def _hash_password(password, salt=None):
+    """Hash a password with PBKDF2 using only the Python standard library."""
+    salt_bytes = salt or secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt_bytes,
+        PASSWORD_HASH_ITERATIONS,
+    )
+    return (
+        base64.b64encode(digest).decode("ascii"),
+        base64.b64encode(salt_bytes).decode("ascii"),
+    )
+
+
+def _public_user(row):
+    if row is None:
+        return None
+    return {
+        "user_id": row["user_id"],
+        "email": row["email"],
+        "display_name": row["display_name"],
+        "created_at": row["created_at"],
+    }
+
+
+def create_user(email, display_name, password):
+    """Create a local ClearTrace account and return its public profile."""
+    email = str(email).strip().lower()
+    display_name = " ".join(str(display_name).strip().split())
+    password_hash, password_salt = _hash_password(password)
+    user_id = str(uuid.uuid4())
+
+    conn = get_conn()
+    try:
+        conn.execute(
+            """INSERT INTO users
+               (user_id, email, display_name, password_hash, password_salt, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (user_id, email, display_name, password_hash, password_salt, _now()),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM users WHERE user_id=?", (user_id,)
+        ).fetchone()
+        return _public_user(row)
+    except sqlite3.IntegrityError as error:
+        raise ValueError("An account with this email already exists.") from error
+    finally:
+        conn.close()
+
+
+def authenticate_user(email, password):
+    """Return a public user profile when the credentials are valid."""
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT * FROM users WHERE email=? COLLATE NOCASE AND is_active=1",
+        (str(email).strip().lower(),),
+    ).fetchone()
+
+    if row is None:
+        conn.close()
+        return None
+
+    try:
+        salt = base64.b64decode(row["password_salt"])
+        candidate_hash, _ = _hash_password(password, salt=salt)
+    except (TypeError, ValueError):
+        conn.close()
+        return None
+
+    if not hmac.compare_digest(candidate_hash, row["password_hash"]):
+        conn.close()
+        return None
+
+    conn.execute(
+        "UPDATE users SET last_login_at=? WHERE user_id=?",
+        (_now(), row["user_id"]),
+    )
+    conn.commit()
+    profile = _public_user(row)
+    conn.close()
+    return profile
+
+
+def create_user_session(user_id, lifetime_days=SESSION_LIFETIME_DAYS):
+    """Create a revocable bearer session; only its SHA-256 hash is stored."""
+    token = "ct_" + secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    created_at = datetime.now(timezone.utc)
+    expires_at = created_at + timedelta(days=max(1, int(lifetime_days)))
+
+    conn = get_conn()
+    conn.execute(
+        """INSERT INTO user_sessions
+           (session_id, user_id, token_hash, created_at, expires_at)
+           VALUES (?, ?, ?, ?, ?)""",
+        (
+            str(uuid.uuid4()),
+            user_id,
+            token_hash,
+            created_at.isoformat(),
+            expires_at.isoformat(),
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return token
+
+
+def get_user_for_session(token):
+    """Resolve an active bearer token to its public user profile."""
+    if not token:
+        return None
+    token_hash = hashlib.sha256(str(token).encode("utf-8")).hexdigest()
+    now = _now()
+    conn = get_conn()
+    row = conn.execute(
+        """SELECT users.*
+           FROM user_sessions
+           JOIN users ON users.user_id = user_sessions.user_id
+           WHERE user_sessions.token_hash=?
+             AND user_sessions.revoked_at IS NULL
+             AND user_sessions.expires_at>?
+             AND users.is_active=1""",
+        (token_hash, now),
+    ).fetchone()
+    profile = _public_user(row)
+    conn.close()
+    return profile
+
+
+def revoke_user_session(token):
+    if not token:
+        return False
+    token_hash = hashlib.sha256(str(token).encode("utf-8")).hexdigest()
+    conn = get_conn()
+    cursor = conn.execute(
+        "UPDATE user_sessions SET revoked_at=? "
+        "WHERE token_hash=? AND revoked_at IS NULL",
+        (_now(), token_hash),
+    )
+    conn.commit()
+    revoked = cursor.rowcount > 0
+    conn.close()
+    return revoked
 
 
 def _haversine_m(lat1, lon1, lat2, lon2):
@@ -229,6 +422,44 @@ def get_nearby_reports(lat, lon, radius_m=3000, include_verified=True):
             row["distance_m"] = round(d, 1)
             out.append(row)
     return sorted(out, key=lambda x: x["distance_m"])
+
+
+def get_report(report_id):
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT * FROM citizen_reports WHERE report_id=?", (report_id,)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_user_reports(user_id):
+    conn = get_conn()
+    rows = conn.execute(
+        """SELECT citizen_reports.*,
+                  COUNT(report_votes.vote_id) AS upvotes
+           FROM citizen_reports
+           LEFT JOIN report_votes
+             ON report_votes.report_id = citizen_reports.report_id
+            AND report_votes.vote_type = 'upvote'
+           WHERE citizen_reports.user_id=?
+           GROUP BY citizen_reports.report_id
+           ORDER BY citizen_reports.created_at DESC""",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def get_report_upvotes(report_id):
+    conn = get_conn()
+    count = conn.execute(
+        """SELECT COUNT(*) AS count FROM report_votes
+           WHERE report_id=? AND vote_type='upvote'""",
+        (report_id,),
+    ).fetchone()["count"]
+    conn.close()
+    return int(count)
 
 
 def vote_report(report_id, user_id, vote_type="upvote", voter_name="Anonymous"):
